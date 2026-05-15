@@ -69,9 +69,9 @@ app.post("/api/create-payment-intent", async (req, res) => {
 
   const pendingId = uuidv4();
 
-  // Random delay: 1 min to 4 hours (in seconds from now)
+  // Random delay: 1 min to 15min (in seconds from now)
   const minDelay = 60;
-  const maxDelay = 60 * 60;
+  const maxDelay = 15 * 60;
   const delaySeconds = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
   const deliverAt = Math.floor(Date.now() / 1000) + delaySeconds;
 
