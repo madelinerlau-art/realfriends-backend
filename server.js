@@ -55,7 +55,7 @@ const MESSAGES = {
   },
 };
 
-app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:3000" }));
+app.use(cors({ origin: ['https://realfriends.us', 'https://www.realfriends.us', 'http://localhost:4000'] }));
 app.use(express.json());
 
 // ---------- Create Stripe checkout ----------
