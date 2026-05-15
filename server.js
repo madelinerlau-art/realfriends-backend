@@ -96,11 +96,17 @@ app.post("/api/create-payment-intent", async (req, res) => {
     return res.status(400).json({ error: "Invalid recipient type" });
   if (!recipientValue) return res.status(400).json({ error: "Recipient required" });
 
+  // Auto-format phone numbers to E.164 (+1 for US numbers)
+  let formattedValue = recipientValue;
+  if (recipientType === 'phone' && !recipientValue.startsWith('+')) {
+    formattedValue = '+1' + recipientValue.replace(/\D/g, '');
+  }
+
   const pendingId = uuidv4();
 
-  // Random delay: 1 min to 4 hours (in seconds from now)
-  const minDelay = 60;
-  const maxDelay = 10; // 10 sec
+  // Random delay: 5-10 seconds for testing
+  const minDelay = 5;
+  const maxDelay = 10;
   const delaySeconds = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
   const deliverAt = Math.floor(Date.now() / 1000) + delaySeconds;
 
@@ -112,14 +118,14 @@ app.post("/api/create-payment-intent", async (req, res) => {
         pendingId,
         messageKey,
         recipientType,
-        recipientValue,
+        formattedValue,
       },
     });
 
     db.prepare(
       `INSERT INTO messages (id, message_key, recipient_type, recipient_value, payment_intent_id, deliver_at)
        VALUES (?, ?, ?, ?, ?, ?)`
-    ).run(pendingId, messageKey, recipientType, recipientValue, paymentIntent.id, deliverAt);
+    ).run(pendingId, messageKey, recipientType, formattedValue, paymentIntent.id, deliverAt);
 
     res.json({ clientSecret: paymentIntent.client_secret, pendingId });
   } catch (err) {
