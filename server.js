@@ -185,7 +185,7 @@ async function deliverPendingMessages() {
   for (const row of rows) {
     const linkUrl = `${process.env.FRONTEND_URL}/m/${row.id}`;
     const smsBody = `no, this isn't spam. someone who knows you has something real to say: ${linkUrl}`;
-    const emailSubject = "a note";
+    const emailSubject = "thought you should know";
     const emailBodyText = `this isn't spam.\n\nsomeone who knows you had something to get off their chest. they paid $1 to say it, which means they meant it.\n\n${linkUrl}`;
 
     try {
@@ -198,7 +198,7 @@ async function deliverPendingMessages() {
       } else {
         await sgMail.send({
           to: row.recipient_value,
-          from: { email: process.env.FROM_EMAIL, name: "a real one" },
+          from: { email: process.env.FROM_EMAIL, name: "from a friend" },
           subject: emailSubject,
           text: emailBodyText,
         });
