@@ -33,26 +33,25 @@ db.exec(`
 
 // ---------- The 3 messages ----------
 const MESSAGES = {
-  so: {
-    id: "so",
-    shortTitle: "I don't like your S.O.",
-    fullText:
-      "I don't like your significant other. I care about you too much to keep pretending. Something feels off, and I think you deserve to know that someone who loves you sees it.",
-    emoji: "💔",
+  boyfriend: {
+    id: "boyfriend",
+    shortTitle: "I don't like your boyfriend.",
+    fullText: "I don't like your boyfriend. I've been holding this in because I didn't want to make things weird — but I care about you too much to keep pretending everything's fine.",
   },
-  proud: {
-    id: "proud",
-    shortTitle: "I'm proud of you",
-    fullText:
-      "I don't say this enough — I'm genuinely proud of you. Not for the obvious stuff. For the quiet hard things you do that most people never notice. You're doing better than you think.",
-    emoji: "🤍",
+  girlfriend: {
+    id: "girlfriend",
+    shortTitle: "I don't like your girlfriend.",
+    fullText: "I don't like your girlfriend. I've been holding this in because I didn't want to make things weird — but I care about you too much to keep pretending everything's fine.",
   },
-  sorry: {
-    id: "sorry",
-    shortTitle: "I'm sorry I wasn't there",
-    fullText:
-      "I wasn't there for you the way I should have been, and I think about it more than you know. I don't have a good excuse. I just want you to know I see it, and I'm sorry.",
-    emoji: "🕊️",
+  talking: {
+    id: "talking",
+    shortTitle: "Someone's talking behind your back.",
+    fullText: "Someone's talking behind your back. I don't want to say who, but I'd want to know if it were me. You deserve to know who's really in your corner.",
+  },
+  wants: {
+    id: "wants",
+    shortTitle: "Someone wants you. Badly.",
+    fullText: "Someone wants you. Badly. They're just too scared to say it. Thought you should know.",
   },
 };
 
