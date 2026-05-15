@@ -184,9 +184,9 @@ async function deliverPendingMessages() {
 
   for (const row of rows) {
     const linkUrl = `${process.env.FRONTEND_URL}/m/${row.id}`;
-    const smsBody = `No, this isn't spam. One of your friends just has something real to say to you: ${linkUrl}`;
-    const emailSubject = "a real friend has something to say";
-    const emailText = `No, this isn't spam.\n\nOne of your friends just has something real to say to you:\n\n${linkUrl}`;
+    const smsBody = `no, this isn't spam. someone who knows you has something real to say: ${linkUrl}`;
+    const emailSubject = "a note";
+    const emailBodyText = `this isn't spam.\n\nsomeone who knows you had something to get off their chest. they paid $1 to say it, which means they meant it.\n\n${linkUrl}`;
 
     try {
       if (row.recipient_type === "phone") {
@@ -198,14 +198,9 @@ async function deliverPendingMessages() {
       } else {
         await sgMail.send({
           to: row.recipient_value,
-          from: { email: process.env.FROM_EMAIL, name: "real friends" },
+          from: { email: process.env.FROM_EMAIL, name: "a real one" },
           subject: emailSubject,
-          text: emailText,
-          html: `<p style="font-family:Georgia,serif;font-size:18px;line-height:1.6;color:#1a1a1a;max-width:480px;margin:60px auto;">
-            No, this isn't spam.<br><br>
-            One of your friends just has something real to say to you:<br><br>
-            <a href="${linkUrl}" style="color:#c0392b;font-weight:bold;">${linkUrl}</a>
-          </p>`,
+          text: emailBodyText,
         });
       }
 
