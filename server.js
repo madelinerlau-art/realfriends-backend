@@ -128,6 +128,27 @@ app.post("/api/create-payment-intent", async (req, res) => {
   }
 });
 
+// ---------- Confirm payment (called from frontend after Stripe confirms) ----------
+app.post("/api/confirm-payment", async (req, res) => {
+  const { paymentIntentId } = req.body;
+  if (!paymentIntentId) return res.status(400).json({ error: "Missing paymentIntentId" });
+
+  try {
+    // Verify with Stripe directly
+    const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+    if (pi.status !== "succeeded") {
+      return res.status(400).json({ error: "Payment not completed" });
+    }
+
+    db.prepare(`UPDATE messages SET paid = 1 WHERE payment_intent_id = ?`).run(paymentIntentId);
+    console.log(`Payment confirmed via client for PI: ${paymentIntentId}`);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Confirm payment error:", err.message);
+    res.status(500).json({ error: "Could not confirm payment" });
+  }
+});
+
 // ---------- View a message (receiver opens link) ----------
 app.get("/api/message/:id", (req, res) => {
   const row = db
