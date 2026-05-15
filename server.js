@@ -56,50 +56,8 @@ const MESSAGES = {
 };
 
 app.use(cors({ origin: ['https://realfriends.us', 'https://www.realfriends.us', 'http://localhost:4000'] }));
-app.use(express.json());
 
-// ---------- Create Stripe checkout ----------
-app.post("/api/create-payment-intent", async (req, res) => {
-  const { messageKey, recipientType, recipientValue } = req.body;
-
-  if (!MESSAGES[messageKey]) return res.status(400).json({ error: "Invalid message" });
-  if (!["phone", "email"].includes(recipientType))
-    return res.status(400).json({ error: "Invalid recipient type" });
-  if (!recipientValue) return res.status(400).json({ error: "Recipient required" });
-
-  const pendingId = uuidv4();
-
-  // Random delay: 1 min to 15min (in seconds from now)
-  const minDelay = 60;
-  const maxDelay = 15 * 60;
-  const delaySeconds = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
-  const deliverAt = Math.floor(Date.now() / 1000) + delaySeconds;
-
-  try {
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: 100, // $1.00
-      currency: "usd",
-      metadata: {
-        pendingId,
-        messageKey,
-        recipientType,
-        recipientValue,
-      },
-    });
-
-    db.prepare(
-      `INSERT INTO messages (id, message_key, recipient_type, recipient_value, payment_intent_id, deliver_at)
-       VALUES (?, ?, ?, ?, ?, ?)`
-    ).run(pendingId, messageKey, recipientType, recipientValue, paymentIntent.id, deliverAt);
-
-    res.json({ clientSecret: paymentIntent.client_secret, pendingId });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Payment setup failed" });
-  }
-});
-
-// ---------- Stripe webhook: payment confirmed ----------
+// Webhook needs raw body - must be registered BEFORE express.json()
 app.post(
   "/api/webhook",
   express.raw({ type: "application/json" }),
@@ -126,6 +84,49 @@ app.post(
     res.json({ received: true });
   }
 );
+
+app.use(express.json());
+
+// ---------- Create Stripe checkout ----------
+app.post("/api/create-payment-intent", async (req, res) => {
+  const { messageKey, recipientType, recipientValue } = req.body;
+
+  if (!MESSAGES[messageKey]) return res.status(400).json({ error: "Invalid message" });
+  if (!["phone", "email"].includes(recipientType))
+    return res.status(400).json({ error: "Invalid recipient type" });
+  if (!recipientValue) return res.status(400).json({ error: "Recipient required" });
+
+  const pendingId = uuidv4();
+
+  // Random delay: 1 min to 4 hours (in seconds from now)
+  const minDelay = 60;
+  const maxDelay = 15 * 60; // 15 minutes max
+  const delaySeconds = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+  const deliverAt = Math.floor(Date.now() / 1000) + delaySeconds;
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: 100, // $1.00
+      currency: "usd",
+      metadata: {
+        pendingId,
+        messageKey,
+        recipientType,
+        recipientValue,
+      },
+    });
+
+    db.prepare(
+      `INSERT INTO messages (id, message_key, recipient_type, recipient_value, payment_intent_id, deliver_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    ).run(pendingId, messageKey, recipientType, recipientValue, paymentIntent.id, deliverAt);
+
+    res.json({ clientSecret: paymentIntent.client_secret, pendingId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Payment setup failed" });
+  }
+});
 
 // ---------- View a message (receiver opens link) ----------
 app.get("/api/message/:id", (req, res) => {
